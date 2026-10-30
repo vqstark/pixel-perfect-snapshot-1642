@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DomainsRouteImport } from './routes/domains'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as DomainsDomainIdRouteImport } from './routes/domains.$domainId'
+import { Route as ReviewVideoIdRouteImport } from './routes/review.$videoId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +30,58 @@ const ReviewRoute = ReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DomainsDomainIdRoute = DomainsDomainIdRouteImport.update({
+  id: '/$domainId',
+  path: '/$domainId',
+  getParentRoute: () => DomainsRoute,
+} as any)
+const ReviewVideoIdRoute = ReviewVideoIdRouteImport.update({
+  id: '/$videoId',
+  path: '/$videoId',
+  getParentRoute: () => ReviewRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/domains': typeof DomainsRoute
-  '/review': typeof ReviewRoute
+  '/domains': typeof DomainsRouteWithChildren
+  '/review': typeof ReviewRouteWithChildren
+  '/domains/$domainId': typeof DomainsDomainIdRoute
+  '/review/$videoId': typeof ReviewVideoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/domains': typeof DomainsRoute
-  '/review': typeof ReviewRoute
+  '/domains': typeof DomainsRouteWithChildren
+  '/review': typeof ReviewRouteWithChildren
+  '/domains/$domainId': typeof DomainsDomainIdRoute
+  '/review/$videoId': typeof ReviewVideoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/domains': typeof DomainsRoute
-  '/review': typeof ReviewRoute
+  '/domains': typeof DomainsRouteWithChildren
+  '/review': typeof ReviewRouteWithChildren
+  '/domains/$domainId': typeof DomainsDomainIdRoute
+  '/review/$videoId': typeof ReviewVideoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/domains' | '/review'
+  fullPaths:
+    '/' | '/domains' | '/review' | '/domains/$domainId' | '/review/$videoId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/domains' | '/review'
-  id: '__root__' | '/' | '/domains' | '/review'
+  to: '/' | '/domains' | '/review' | '/domains/$domainId' | '/review/$videoId'
+  id:
+    | '__root__'
+    | '/'
+    | '/domains'
+    | '/review'
+    | '/domains/$domainId'
+    | '/review/$videoId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DomainsRoute: typeof DomainsRoute
-  ReviewRoute: typeof ReviewRoute
+  DomainsRoute: typeof DomainsRouteWithChildren
+  ReviewRoute: typeof ReviewRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +107,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/domains/$domainId': {
+      id: '/domains/$domainId'
+      path: '/$domainId'
+      fullPath: '/domains/$domainId'
+      preLoaderRoute: typeof DomainsDomainIdRouteImport
+      parentRoute: typeof DomainsRoute
+    }
+    '/review/$videoId': {
+      id: '/review/$videoId'
+      path: '/$videoId'
+      fullPath: '/review/$videoId'
+      preLoaderRoute: typeof ReviewVideoIdRouteImport
+      parentRoute: typeof ReviewRoute
+    }
   }
 }
 
+interface DomainsRouteChildren {
+  DomainsDomainIdRoute: typeof DomainsDomainIdRoute
+}
+
+const DomainsRouteChildren: DomainsRouteChildren = {
+  DomainsDomainIdRoute: DomainsDomainIdRoute,
+}
+
+const DomainsRouteWithChildren =
+  DomainsRoute._addFileChildren(DomainsRouteChildren)
+
+interface ReviewRouteChildren {
+  ReviewVideoIdRoute: typeof ReviewVideoIdRoute
+}
+
+const ReviewRouteChildren: ReviewRouteChildren = {
+  ReviewVideoIdRoute: ReviewVideoIdRoute,
+}
+
+const ReviewRouteWithChildren =
+  ReviewRoute._addFileChildren(ReviewRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DomainsRoute: DomainsRoute,
-  ReviewRoute: ReviewRoute,
+  DomainsRoute: DomainsRouteWithChildren,
+  ReviewRoute: ReviewRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
